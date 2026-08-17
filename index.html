@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>练字 ฝึกเขียนจีน HSK 1-3</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@400;600;700&family=Noto+Sans+SC:wght@400;500&family=Noto+Sans+Thai:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+<div class="sheet">
+  <header>
+    <div class="cn">练字生字</div>
+    <div class="th">สุ่มคำศัพท์จีน HSK 1-3 · ฝึกเขียนบนตารางหัดเขียน</div>
+  </header>
+  <div class="rule"></div>
+
+  <div class="levels" id="levelBtns">
+    <button class="lvl-btn active" data-lvl="all">ทั้งหมด</button>
+    <button class="lvl-btn" data-lvl="1">HSK 1</button>
+    <button class="lvl-btn" data-lvl="2">HSK 2</button>
+    <button class="lvl-btn" data-lvl="3">HSK 3</button>
+  </div>
+
+  <div class="card">
+    <div class="word-head">
+      <div class="hanzi" id="hanzi">你好</div>
+      <div class="pinyin" id="pinyin">nǐ hǎo</div>
+      <div class="meaning" id="meaning">สวัสดี</div>
+      <div class="badge" id="levelBadge">HSK 1</div>
+    </div>
+
+    <div class="grids" id="grids"></div>
+
+    <div class="toggle-row">
+      <input type="checkbox" id="traceToggle" checked>
+      <label for="traceToggle">แสดงตัวอักษรจางๆ ให้ลากตาม</label>
+    </div>
+
+    <div class="controls">
+      <button class="btn ghost" id="clearBtn">ล้างที่เขียน</button>
+      <button class="btn seal" id="randomBtn">สุ่มคำใหม่ 印</button>
+    </div>
+  </div>
+
+  <footer>ลากนิ้วหรือเมาส์บนตารางเพื่อฝึกเขียนตามเส้นตัวอักษร</footer>
+</div>
+<script src="script.js"></script>
+</body>
+</html>
