@@ -24,7 +24,12 @@
     <button class="lvl-btn" data-lvl="3">HSK 3</button>
   </div>
 
-  <div class="card">
+  <div class="modes" id="modeBtns" aria-label="โหมดฝึก">
+    <button class="mode-btn active" data-mode="normal" aria-pressed="true">ดูคำศัพท์</button>
+    <button class="mode-btn" data-mode="pinyin" aria-pressed="false">ทบทวน Pinyin</button>
+  </div>
+
+  <div class="card" id="practiceCard">
     <div class="word-head">
       <div class="hanzi" id="hanzi">你好</div>
       <div class="pinyin" id="pinyin">nǐ hǎo</div>

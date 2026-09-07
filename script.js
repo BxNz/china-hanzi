@@ -1,5 +1,6 @@
 let VOCAB = [];
 let currentLevel = "all";
+let currentMode = "normal";
 let currentWord = null;
 
 function pickWord(){
@@ -15,13 +16,19 @@ function renderWord(w){
   document.getElementById('pinyin').textContent = w.p;
   document.getElementById('meaning').textContent = w.t;
   document.getElementById('levelBadge').textContent = 'HSK ' + w.l;
+  updateModeView();
   buildGrids(w.h);
+}
+
+function updateModeView(){
+  const card = document.getElementById('practiceCard');
+  card.classList.toggle('pinyin-only', currentMode === 'pinyin');
 }
 
 function buildGrids(chars){
   const container = document.getElementById('grids');
   container.innerHTML = '';
-  const showTrace = document.getElementById('traceToggle').checked;
+  const showTrace = currentMode === 'normal' && document.getElementById('traceToggle').checked;
   [...chars].forEach(ch => {
     const cell = document.createElement('div');
     cell.className = 'cell';
@@ -110,6 +117,19 @@ function attachUI(){
     btn.classList.add('active');
     currentLevel = btn.dataset.lvl;
     pickWord();
+  });
+
+  document.getElementById('modeBtns').addEventListener('click', (e) => {
+    const btn = e.target.closest('.mode-btn');
+    if(!btn) return;
+    currentMode = btn.dataset.mode;
+    document.querySelectorAll('.mode-btn').forEach(b => {
+      const active = b === btn;
+      b.classList.toggle('active', active);
+      b.setAttribute('aria-pressed', active ? 'true' : 'false');
+    });
+    updateModeView();
+    buildGrids(currentWord.h);
   });
 
   document.getElementById('randomBtn').addEventListener('click', pickWord);
