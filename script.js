@@ -2,9 +2,18 @@ let VOCAB = [];
 let currentLevel = "all";
 let currentMode = "normal";
 let currentWord = null;
+let currentSource = "system";
+let selectedWords = new Set();
+let customWords = [];
+
+function getCustomPool(){
+  return VOCAB.filter(w => selectedWords.has(w.h)).concat(customWords);
+}
 
 function pickWord(){
-  const pool = currentLevel === "all" ? VOCAB : VOCAB.filter(w => w.l === Number(currentLevel));
+  const pool = currentSource === "custom"
+    ? getCustomPool()
+    : (currentLevel === "all" ? VOCAB : VOCAB.filter(w => w.l === Number(currentLevel)));
   if (!pool || pool.length === 0) return;
   const w = pool[Math.floor(Math.random() * pool.length)];
   currentWord = w;
@@ -15,7 +24,7 @@ function renderWord(w){
   document.getElementById('hanzi').textContent = w.h;
   document.getElementById('pinyin').textContent = w.p;
   document.getElementById('meaning').textContent = w.t;
-  document.getElementById('levelBadge').textContent = 'HSK ' + w.l;
+  document.getElementById('levelBadge').textContent = w.l ? 'HSK ' + w.l : 'คำที่เพิ่มเอง';
   updateModeView();
   buildGrids(w.h);
 }
@@ -23,6 +32,63 @@ function renderWord(w){
 function updateModeView(){
   const card = document.getElementById('practiceCard');
   card.classList.toggle('pinyin-only', currentMode === 'pinyin');
+}
+
+function saveCustomWords(){
+  localStorage.setItem('hanzi-custom-words', JSON.stringify(customWords));
+}
+
+function loadCustomWords(){
+  try {
+    customWords = JSON.parse(localStorage.getItem('hanzi-custom-words') || '[]');
+    if (!Array.isArray(customWords)) customWords = [];
+  } catch (err) {
+    customWords = [];
+  }
+}
+
+function renderWordList(){
+  const query = document.getElementById('wordSearch').value.trim();
+  const list = document.getElementById('wordList');
+  const words = VOCAB.filter(w => !query || w.h.includes(query) || w.p.includes(query) || w.t.includes(query));
+  list.innerHTML = '';
+  words.forEach(w => {
+    const label = document.createElement('label');
+    label.className = 'word-option';
+    label.innerHTML = `<input type="checkbox" data-word="${w.h}"><span class="option-hanzi">${w.h}</span><span class="option-meaning">${w.t}</span><span class="option-level">HSK ${w.l}</span>`;
+    const checkbox = label.querySelector('input');
+    checkbox.checked = selectedWords.has(w.h);
+    checkbox.addEventListener('change', () => {
+      if (checkbox.checked) selectedWords.add(w.h);
+      else selectedWords.delete(w.h);
+      updateSelectedCount();
+    });
+    list.appendChild(label);
+  });
+  updateSelectedCount();
+}
+
+function updateSelectedCount(){
+  document.getElementById('selectedCount').textContent = `เลือกแล้ว ${selectedWords.size + customWords.length} คำ`;
+}
+
+function parseCustomWords(){
+  return document.getElementById('customWords').value.split('\n').map(line => {
+    const parts = line.split('|').map(part => part.trim());
+    return { h: parts[0], p: parts[1] || '', t: parts[2] || 'คำที่เพิ่มเอง', l: null };
+  }).filter(w => w.h);
+}
+
+function setSource(source){
+  currentSource = source;
+  document.querySelectorAll('.source-btn').forEach(btn => {
+    const active = btn.dataset.source === source;
+    btn.classList.toggle('active', active);
+    btn.setAttribute('aria-pressed', active ? 'true' : 'false');
+  });
+  document.getElementById('customPanel').hidden = source !== 'custom';
+  if (source === 'custom') renderWordList();
+  pickWord();
 }
 
 function buildGrids(chars){
@@ -129,7 +195,34 @@ function attachUI(){
       b.setAttribute('aria-pressed', active ? 'true' : 'false');
     });
     updateModeView();
-    buildGrids(currentWord.h);
+    if (currentWord) buildGrids(currentWord.h);
+  });
+
+  document.getElementById('sourceBtns').addEventListener('click', (e) => {
+    const btn = e.target.closest('.source-btn');
+    if (btn) setSource(btn.dataset.source);
+  });
+
+  document.getElementById('wordSearch').addEventListener('input', renderWordList);
+  document.getElementById('selectAllBtn').addEventListener('click', () => {
+    VOCAB.forEach(w => selectedWords.add(w.h));
+    renderWordList();
+  });
+  document.getElementById('clearSelectionBtn').addEventListener('click', () => {
+    selectedWords.clear();
+    renderWordList();
+  });
+  document.getElementById('applyCustomBtn').addEventListener('click', () => {
+    customWords = parseCustomWords();
+    saveCustomWords();
+    updateSelectedCount();
+    const status = document.getElementById('customStatus');
+    if (selectedWords.size + customWords.length === 0) {
+      status.textContent = 'กรุณาเลือกหรือเพิ่มอย่างน้อย 1 คำ';
+      return;
+    }
+    status.textContent = `พร้อมสุ่ม ${selectedWords.size + customWords.length} คำ`;
+    pickWord();
   });
 
   document.getElementById('randomBtn').addEventListener('click', pickWord);
@@ -141,6 +234,8 @@ function startApp(){
   if (!VOCAB || VOCAB.length === 0) return;
   currentLevel = 'all';
   currentWord = VOCAB[0];
+  loadCustomWords();
+  document.getElementById('customWords').value = customWords.map(w => [w.h, w.p, w.t].join(' | ')).join('\n');
   attachUI();
   renderWord(currentWord);
 }

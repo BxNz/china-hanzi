@@ -29,6 +29,29 @@
     <button class="mode-btn" data-mode="pinyin" aria-pressed="false">ทบทวน Pinyin</button>
   </div>
 
+  <div class="source-switch" id="sourceBtns" aria-label="แหล่งคำสุ่ม">
+    <button class="source-btn active" data-source="system" aria-pressed="true">สุ่มจาก HSK</button>
+    <button class="source-btn" data-source="custom" aria-pressed="false">เลือกคำเอง</button>
+  </div>
+
+  <section class="custom-panel" id="customPanel" hidden>
+    <div class="custom-heading">
+      <strong>รายการคำสำหรับสุ่ม</strong>
+      <span id="selectedCount">เลือกแล้ว 0 คำ</span>
+    </div>
+    <div class="custom-actions">
+      <button class="text-btn" id="selectAllBtn" type="button">เลือกทั้งหมด</button>
+      <button class="text-btn" id="clearSelectionBtn" type="button">ล้างการเลือก</button>
+    </div>
+    <input class="word-search" id="wordSearch" type="search" placeholder="ค้นหาคำจีนในระบบ..." aria-label="ค้นหาคำจีนในระบบ">
+    <div class="word-list" id="wordList"></div>
+    <label class="custom-label" for="customWords">เพิ่มคำเอง (บรรทัดละ 1 คำ)</label>
+    <textarea id="customWords" rows="3" placeholder="例如 | lìrú | ตัวอย่าง&#10;学习 | xuéxí | เรียน, ศึกษา"></textarea>
+    <p class="custom-hint">รูปแบบ: 汉字 | pinyin | ความหมาย โดย pinyin และความหมายเป็นตัวเลือก</p>
+    <button class="btn seal apply-btn" id="applyCustomBtn" type="button">ใช้รายการนี้สุ่ม</button>
+    <p class="custom-status" id="customStatus" role="status"></p>
+  </section>
+
   <div class="card" id="practiceCard">
     <div class="word-head">
       <div class="hanzi" id="hanzi">你好</div>

@@ -44,6 +44,27 @@ header .th{ font-size:14px; color:var(--ink-soft); margin-top:4px; letter-spacin
 .mode-btn:last-child{ border-radius:0 4px 4px 0; }
 .mode-btn + .mode-btn{ border-left:0; }
 .mode-btn.active{ background:var(--seal); border-color:var(--seal); color:#fff; }
+.source-switch{ display:flex; justify-content:center; gap:8px; margin:-8px auto 18px; }
+.source-btn{ font-family:'Noto Sans Thai',sans-serif; font-size:12px; padding:6px 13px; border:1px solid var(--gold); border-radius:999px; background:transparent; color:var(--ink-soft); cursor:pointer; }
+.source-btn.active{ background:var(--gold); color:#fff; }
+.custom-panel{ background:rgba(247,243,233,.78); border:1px solid var(--grid-line); border-radius:4px; padding:14px; margin-bottom:18px; }
+.custom-heading{ display:flex; justify-content:space-between; align-items:center; gap:12px; font-size:13px; }
+.custom-heading span,.custom-hint,.custom-status{ color:var(--ink-soft); font-size:11px; }
+.custom-actions{ display:flex; gap:12px; margin:8px 0; }
+.text-btn{ border:0; padding:0; background:none; color:var(--seal); font:inherit; font-size:11px; cursor:pointer; }
+.word-search,.custom-panel textarea{ width:100%; border:1px solid var(--grid-line); border-radius:3px; background:#fff; color:var(--ink); padding:8px 10px; font:12px 'Noto Sans Thai','Noto Sans SC',sans-serif; }
+.word-list{ display:grid; gap:3px; max-height:180px; overflow-y:auto; margin:8px 0 12px; padding-right:3px; }
+.word-option{ display:grid; grid-template-columns:18px 42px 1fr auto; align-items:center; gap:6px; padding:5px 6px; cursor:pointer; font-size:11px; }
+.word-option:hover{ background:rgba(216,207,180,.35); }
+.word-option input{ accent-color:var(--seal); }
+.option-hanzi{ font-family:'Noto Serif SC',serif; font-size:16px; }
+.option-meaning{ color:var(--ink-soft); overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+.option-level{ color:var(--gold); font-size:10px; }
+.custom-label{ display:block; font-size:11px; color:var(--ink-soft); margin-bottom:5px; }
+.custom-panel textarea{ resize:vertical; min-height:68px; }
+.custom-hint{ margin:5px 0 10px; }
+.apply-btn{ width:100%; padding:8px; }
+.custom-status{ min-height:15px; margin:7px 0 0; text-align:center; color:var(--seal); }
 .lvl-btn{
   font-family:'Noto Sans Thai',sans-serif;
   font-size:13px; padding:7px 16px; border-radius:999px; border:1px solid var(--grid-line);
