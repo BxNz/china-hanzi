@@ -228,3 +228,15 @@ button:active{transform:scale(.98);}
   padding:60px 20px;
   color:var(--ink-soft);
 }
+.speak-btn{
+  margin-top:14px;
+  padding:8px 16px;
+  border-radius:20px;
+  border:1px solid var(--accent);
+  background:var(--accent-soft);
+  color:var(--accent);
+  font-size:13px;
+  font-weight:500;
+  cursor:pointer;
+}
+.speak-btn:disabled{opacity:.5;cursor:default;}
