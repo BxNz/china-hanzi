@@ -19,7 +19,7 @@ body{
   color:var(--ink);
   display:flex;
   justify-content:center;
-  padding:28px 14px 60px;
+  padding:84px 14px 60px;
   min-height:100vh;
 }
 .sheet{ width:100%; max-width:520px; }
@@ -33,6 +33,9 @@ header .cn{
 }
 header .th{ font-size:14px; color:var(--ink-soft); margin-top:4px; letter-spacing:0.5px; }
 .rule{ height:1px; background:linear-gradient(90deg, transparent, var(--gold), transparent); margin:14px 0 20px; }
+.page-nav{ display:flex; justify-content:center; gap:8px; margin:-8px auto 20px; }
+.page-nav-link{ font-size:13px; padding:7px 14px; border:1px solid var(--grid-line); border-radius:4px; background:var(--paper-card); color:var(--ink-soft); text-decoration:none; }
+.page-nav-link.active{ background:var(--ink); border-color:var(--ink); color:var(--paper-card); }
 .levels{ display:flex; justify-content:center; gap:8px; margin-bottom:20px; flex-wrap:wrap; }
 .modes{ display:flex; justify-content:center; gap:0; margin:-8px auto 20px; }
 .mode-btn{
