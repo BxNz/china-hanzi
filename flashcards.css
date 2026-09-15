@@ -229,6 +229,8 @@ button:active{transform:scale(.98);}
   color:var(--ink-soft);
 }
 .speak-btn{
+  position:relative;
+  z-index:2;
   margin-top:14px;
   padding:8px 16px;
   border-radius:20px;
@@ -238,5 +240,6 @@ button:active{transform:scale(.98);}
   font-size:13px;
   font-weight:500;
   cursor:pointer;
+  touch-action:manipulation;
 }
 .speak-btn:disabled{opacity:.5;cursor:default;}

@@ -512,7 +512,8 @@ function prev() {
   render();
 }
 
-document.getElementById("tag").addEventListener("click", () => {
+document.getElementById("tag").addEventListener("click", (e) => {
+  if (e.target.closest("button")) return;
   flipped = !flipped;
   els.tag.classList.toggle("flipped", flipped);
 });
