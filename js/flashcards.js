@@ -370,6 +370,27 @@ const VOCAB = [
   },
 ];
 
+function loadCustomWords(){
+  try {
+    const saved = JSON.parse(localStorage.getItem("hanzi-custom-words") || "[]");
+    if (!Array.isArray(saved)) return;
+
+    saved.forEach((word, index) => {
+      if (!word.h || VOCAB.some((item) => item.hanzi === word.h)) return;
+      VOCAB.push({
+        id: `custom-${index}-${word.h}`,
+        cat: "custom",
+        hanzi: word.h,
+        pinyin: word.p || "ยังไม่ได้เพิ่ม pinyin",
+        thai: word.t || "คำที่เพิ่มเอง",
+      });
+    });
+  } catch (error) {
+  }
+}
+
+loadCustomWords();
+
 const CATS = [
   { id: "all", label: "ทั้งหมด" },
   { id: "shop", label: "ร้านค้า" },
@@ -377,6 +398,7 @@ const CATS = [
   { id: "itqa", label: "IT/QA" },
   { id: "kcc", label: "KCC_POS" },
   { id: "sent", label: "ประโยค" },
+  { id: "custom", label: "คำของฉัน" },
 ];
 
 let known = {};

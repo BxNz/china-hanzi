@@ -11,7 +11,8 @@ async function loadNavbar(){
     const pagePaths = {
       practice: inViewFolder ? '../index.html' : 'index.html',
       flashcards: inViewFolder ? 'flashcards.html' : 'view/flashcards.html',
-      'add-word': inViewFolder ? 'addNewword.html' : 'view/addNewword.html'
+      'add-word': inViewFolder ? 'addNewword.html' : 'view/addNewword.html',
+      'hsk-pdf': inViewFolder ? '../hsk-words-visualized.pdf' : 'hsk-words-visualized.pdf'
     };
     const brand = container.querySelector('.navbar-brand');
     if (brand) brand.href = pagePaths.practice;
