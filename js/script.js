@@ -5,6 +5,24 @@ let currentWord = null;
 let currentSource = "system";
 let selectedWords = new Set();
 let customWords = [];
+let zhVoice = null;
+
+function pickZhVoice(){
+  if (!('speechSynthesis' in window)) return;
+  const voices = speechSynthesis.getVoices();
+  zhVoice = voices.find(v => v.lang === 'zh-CN') ||
+    voices.find(v => v.lang && v.lang.toLowerCase().startsWith('zh')) || null;
+}
+
+function speakCurrentWord(){
+  if (!('speechSynthesis' in window) || !currentWord) return;
+  const utterance = new SpeechSynthesisUtterance(currentWord.h);
+  utterance.lang = 'zh-CN';
+  if (zhVoice) utterance.voice = zhVoice;
+  utterance.rate = 0.9;
+  speechSynthesis.cancel();
+  speechSynthesis.speak(utterance);
+}
 
 function getCustomPool(){
   return VOCAB.filter(w => selectedWords.has(w.h)).concat(customWords);
@@ -176,6 +194,16 @@ function setupDrawing(cell, canvas){
 }
 
 function attachUI(){
+  const speakBtn = document.getElementById('speakBtn');
+  if (!('speechSynthesis' in window)) {
+    speakBtn.disabled = true;
+    speakBtn.textContent = 'เบราว์เซอร์นี้เล่นเสียงไม่ได้';
+  } else {
+    pickZhVoice();
+    speechSynthesis.addEventListener('voiceschanged', pickZhVoice);
+    speakBtn.addEventListener('click', speakCurrentWord);
+  }
+
   document.getElementById('levelBtns').addEventListener('click', (e) => {
     const btn = e.target.closest('.lvl-btn');
     if(!btn) return;
