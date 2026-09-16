@@ -240,7 +240,7 @@ function startApp(){
   renderWord(currentWord);
 }
 
-fetch('vocab.json')
+fetch('json/vocab.json')
   .then(r => r.json())
   .then(data => { VOCAB = data; startApp(); })
   .catch(err => { console.error('Failed to load vocab.json', err); });
