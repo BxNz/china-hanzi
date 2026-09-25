@@ -61,6 +61,13 @@ const VOCAB = [
     thai: "เปลี่ยนสินค้า",
   },
   {
+    id: "s14",
+    cat: "shop",
+    hanzi:"管理端",
+    pinyin: "guǎnlǐ duān",
+    thai: "ระบบจัดการ (Web Admin)",
+  },
+  {
     id: "p1",
     cat: "pos",
     hanzi: "收银系统",

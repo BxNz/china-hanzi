@@ -268,7 +268,26 @@ function startApp(){
   renderWord(currentWord);
 }
 
-fetch('json/vocab.json')
-  .then(r => r.json())
-  .then(data => { VOCAB = data; startApp(); })
-  .catch(err => { console.error('Failed to load vocab.json', err); });
+// Load vocabulary from SQLite DB server or fallback to json/vocab.json
+fetch('/api/words')
+  .then(r => {
+    if (!r.ok) throw new Error('DB API not available');
+    return r.json();
+  })
+  .then(data => {
+    if (Array.isArray(data) && data.length > 0) {
+      VOCAB = data;
+      console.log(`✅ Loaded ${VOCAB.length} words from SQLite DB API.`);
+    } else {
+      throw new Error('Empty data from DB');
+    }
+    startApp();
+  })
+  .catch(err => {
+    console.warn('⚠️ Fetching from SQLite DB failed, loading static json/vocab.json:', err);
+    fetch('json/vocab.json')
+      .then(r => r.json())
+      .then(data => { VOCAB = data; startApp(); })
+      .catch(e => console.error('Failed to load vocab.json', e));
+  });
+

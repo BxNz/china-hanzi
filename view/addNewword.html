@@ -3,7 +3,7 @@
 <head>
 	<meta charset="UTF-8">
 	<meta name="viewport" content="width=device-width, initial-scale=1.0">
-	<title>เพิ่มคำศัพท์จีน</title>
+	<title>เพิ่มคำศัพท์จีน - SQLite DB</title>
 	<link rel="preconnect" href="https://fonts.googleapis.com">
 	<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 	<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@400;600;700&family=Noto+Sans+SC:wght@400;500&family=Noto+Sans+Thai:wght@400;500;600&display=swap" rel="stylesheet">
@@ -14,15 +14,19 @@
 	<main class="add-word-page">
 		<header class="page-header">
 			<div class="cn">新增词语</div>
-			<div class="th">เพิ่มคำศัพท์จีนของคุณเอง</div>
+			<div class="th">เพิ่มและจัดการคำศัพท์จีนใน SQLite Database</div>
 		</header>
 		<div class="rule"></div>
 		<div data-navbar></div>
 
+		<div class="status-container">
+			<div id="dbBadge" class="db-badge">กำลังเชื่อมต่อ SQLite Database...</div>
+		</div>
+
 		<section class="form-card" aria-labelledby="formTitle">
 			<div class="form-content">
-				<h1 class="card-title" id="formTitle">เพิ่มคำใหม่</h1>
-				<p class="card-hint">คำที่เพิ่มจะถูกเก็บไว้ในเครื่อง และนำไปสุ่มฝึกเขียนได้ทันที</p>
+				<h1 class="card-title" id="formTitle">เพิ่มคำใหม่เข้าคลัง DB</h1>
+				<p class="card-hint">คำที่บันทึกจะถูกเก็บลงในฐานข้อมูล SQLite (`vocab.db`) และนำไปสุ่มฝึกเขียนได้ทันที</p>
 				<form id="wordForm">
 					<label class="field" for="hanzi">
 						<span class="field-label">ตัวอักษรจีน <strong>*</strong></span>
@@ -36,7 +40,7 @@
 						<label class="field" for="level">
 							<span class="field-label">ระดับ</span>
 							<select id="level" name="level">
-								<option value="">คำของฉัน</option>
+								<option value="">คำของฉัน (Custom)</option>
 								<option value="1">HSK 1</option>
 								<option value="2">HSK 2</option>
 								<option value="3">HSK 3</option>
@@ -49,7 +53,7 @@
 					</label>
 					<div class="form-actions">
 						<button class="btn" type="reset">ล้างฟอร์ม</button>
-						<button class="btn seal" type="submit">บันทึกคำนี้</button>
+						<button class="btn seal" type="submit">💾 บันทึกลง SQLite DB</button>
 					</div>
 					<p class="status" id="formStatus" role="status" aria-live="polite"></p>
 				</form>
@@ -58,9 +62,11 @@
 
 		<section class="saved-card" aria-labelledby="savedTitle">
 			<div class="saved-header">
-				<h2 id="savedTitle">คำที่เพิ่มไว้</h2>
+				<h2 id="savedTitle">รายการคำศัพท์ในฐานข้อมูล DB</h2>
 				<span class="saved-count" id="savedCount">0 คำ</span>
-				<button class="clear-btn" id="clearWords" type="button">ล้างทั้งหมด</button>
+			</div>
+			<div class="search-bar-container">
+				<input id="searchWordInput" type="search" class="form-control search-input" placeholder="🔍 ค้นหาคำศัพท์ พินอิน หรือความหมายใน DB...">
 			</div>
 			<div class="saved-list" id="savedWords"></div>
 		</section>
