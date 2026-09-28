@@ -1,13 +1,22 @@
 <?php
 // Configuration file for Database Connection (XAMPP & InfinityFree)
 
-// Default Configuration for XAMPP (Localhost)
-define('DB_HOST', getenv('DB_HOST') ?: 'localhost');
-define('DB_NAME', getenv('DB_NAME') ?: 'china_hanzi');
-define('DB_USER', getenv('DB_USER') ?: 'root');
-define('DB_PASS', getenv('DB_PASS') ?: '');
+// Database Driver Mode:
+// 'auto'  => Try MySQL first. If MySQL is offline (e.g. local XAMPP MySQL not started), fallback to SQLite automatically!
+// 'mysql' => Force MySQL connection (recommended for InfinityFree deployment)
+// 'sqlite'=> Force SQLite connection
+define('DB_DRIVER', getenv('DB_DRIVER') ?: 'auto');
+
+// Default MySQL Configuration for XAMPP (Localhost)
+define('DB_HOST', getenv('DB_HOST') ?: 'sql210.infinityfree.com');
+define('DB_NAME', getenv('DB_NAME') ?: 'if0_43028600_china_hanzi');
+define('DB_USER', getenv('DB_USER') ?: 'if0_43028600');
+define('DB_PASS', getenv('DB_PASS') ?: 'JBQuu2tUTM3H0');
 define('DB_PORT', getenv('DB_PORT') ?: '3306');
 define('DB_CHARSET', 'utf8mb4');
+
+// SQLite File Path (Fallback for Local Development)
+define('SQLITE_FILE', __DIR__ . '/vocab.sqlite');
 
 /*
  * ==============================================================================
@@ -20,8 +29,9 @@ define('DB_CHARSET', 'utf8mb4');
  *    - MySQL Database Name (e.g., if0_38000000_china_hanzi)
  *    - MySQL Username (e.g., if0_38000000)
  *    - MySQL Password (your vPanel account password)
- * 3. Uncomment and fill in the values below:
+ * 3. Uncomment and set the variables below:
  *
+ * define('DB_DRIVER', 'mysql');
  * define('DB_HOST', 'sqlXXX.infinityfree.com');
  * define('DB_NAME', 'if0_XXXXXXXX_china_hanzi');
  * define('DB_USER', 'if0_XXXXXXXX');

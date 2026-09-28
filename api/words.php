@@ -14,7 +14,9 @@ if ($method === 'OPTIONS') {
 require_once __DIR__ . '/db.php';
 
 try {
-    $pdo = getDbConnection();
+    $dbInfo = getDbConnection();
+    $pdo = $dbInfo['pdo'];
+    $driver = $dbInfo['driver'];
 
     // 1. GET /api/words.php - Fetch vocabulary words
     if ($method === 'GET') {
@@ -125,7 +127,8 @@ try {
         }
 
         echo json_encode([
-            'message' => 'บันทึกคำศัพท์ลง MySQL DB เรียบร้อยแล้ว',
+            'message' => "บันทึกคำศัพท์ลง $driver DB เรียบร้อยแล้ว",
+            'db' => $driver,
             'word' => $updatedRow
         ], JSON_UNESCAPED_UNICODE);
         exit;
@@ -136,7 +139,6 @@ try {
         $id = $_GET['id'] ?? null;
         $hanzi = $_GET['hanzi'] ?? null;
 
-        // Parse PATH_INFO if query string was not used
         $pathInfo = $_SERVER['PATH_INFO'] ?? '';
         if (empty($id) && empty($hanzi) && !empty($pathInfo)) {
             $parts = array_values(array_filter(explode('/', $pathInfo)));

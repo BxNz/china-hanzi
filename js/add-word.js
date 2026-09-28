@@ -17,19 +17,28 @@ async function checkDbStatus() {
     const res = await fetch(getApiEndpoint('health.php'));
     if (res.ok) {
       const data = await res.json();
-      isDbOnline = true;
-      if (dbBadge) {
-        dbBadge.className = 'db-badge online';
-        dbBadge.innerHTML = `🟢 MySQL DB Online (${data.totalWords} คำ ในระบบ)`;
+      if (data.status === 'online') {
+        isDbOnline = true;
+        if (dbBadge) {
+          dbBadge.className = 'db-badge online';
+          dbBadge.innerHTML = `🟢 DB Online (${data.db} Mode - ${data.totalWords} คำ ในระบบ)`;
+        }
+      } else {
+        throw new Error(data.error || 'DB health check failed');
       }
     } else {
-      throw new Error('DB health check failed');
+      let errMsg = 'ไม่สามารถเชื่อมต่อ DB ได้';
+      try {
+        const errData = await res.json();
+        if (errData.error) errMsg = errData.error;
+      } catch (e) {}
+      throw new Error(errMsg);
     }
   } catch (err) {
     isDbOnline = false;
     if (dbBadge) {
       dbBadge.className = 'db-badge offline';
-      dbBadge.innerHTML = '🟡 โหมด Offline (ใช้ LocalStorage ในเครื่อง)';
+      dbBadge.innerHTML = `🟡 โหมด Offline (ใช้ LocalStorage ในเครื่อง): ${err.message}`;
     }
   }
 }
@@ -156,7 +165,9 @@ document.getElementById('wordForm')?.addEventListener('submit', async (event) =>
       });
 
       if (response.ok) {
-        setStatus(`✅ บันทึก "${hanziVal}" ลง MySQL DB สำเร็จ!`);
+        const resData = await response.json();
+        const dbName = resData.db || 'DB';
+        setStatus(`✅ บันทึก "${hanziVal}" ลง ${dbName} สำเร็จ!`);
         form.reset();
         form.hanzi.focus();
         await loadWords(); // refresh list & db badge count

@@ -14,13 +14,16 @@ if ($method === 'OPTIONS') {
 require_once __DIR__ . '/db.php';
 
 try {
-    $pdo = getDbConnection();
+    $dbInfo = getDbConnection();
+    $pdo = $dbInfo['pdo'];
+    $driver = $dbInfo['driver'];
+
     $stmt = $pdo->query("SELECT COUNT(*) AS count FROM words");
     $row = $stmt->fetch();
     
     echo json_encode([
         'status' => 'online',
-        'db' => 'MySQL',
+        'db' => $driver,
         'totalWords' => $row ? (int)$row['count'] : 0
     ], JSON_UNESCAPED_UNICODE);
 } catch (Exception $e) {
