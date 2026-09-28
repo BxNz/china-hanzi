@@ -268,8 +268,14 @@ function startApp(){
   renderWord(currentWord);
 }
 
-// Load vocabulary from SQLite DB server or fallback to json/vocab.json
-fetch('/api/words')
+function getApiEndpoint(path) {
+  const inViewFolder = window.location.pathname.replace(/\\/g, '/').includes('/view/');
+  const prefix = inViewFolder ? '../api/' : 'api/';
+  return prefix + path;
+}
+
+// Load vocabulary from MySQL DB server or fallback to json/vocab.json
+fetch(getApiEndpoint('words.php'))
   .then(r => {
     if (!r.ok) throw new Error('DB API not available');
     return r.json();
@@ -277,17 +283,20 @@ fetch('/api/words')
   .then(data => {
     if (Array.isArray(data) && data.length > 0) {
       VOCAB = data;
-      console.log(`✅ Loaded ${VOCAB.length} words from SQLite DB API.`);
+      console.log(`✅ Loaded ${VOCAB.length} words from MySQL DB API.`);
     } else {
       throw new Error('Empty data from DB');
     }
     startApp();
   })
   .catch(err => {
-    console.warn('⚠️ Fetching from SQLite DB failed, loading static json/vocab.json:', err);
-    fetch('json/vocab.json')
+    console.warn('⚠️ Fetching from MySQL DB failed, loading static json/vocab.json:', err);
+    const inViewFolder = window.location.pathname.replace(/\\/g, '/').includes('/view/');
+    const jsonPath = inViewFolder ? '../json/vocab.json' : 'json/vocab.json';
+    fetch(jsonPath)
       .then(r => r.json())
       .then(data => { VOCAB = data; startApp(); })
       .catch(e => console.error('Failed to load vocab.json', e));
   });
+
 

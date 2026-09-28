@@ -1,0 +1,21 @@
+# Apache Configuration File for XAMPP & InfinityFree
+
+# Set default charset
+AddDefaultCharset UTF-8
+
+<IfModule mod_rewrite.c>
+    RewriteEngine On
+    RewriteBase /
+
+    # Route /api/health to api/health.php
+    RewriteRule ^api/health/?$ api/health.php [L,QSA]
+
+    # Route /api/words/by-hanzi/(.*) to api/words.php?hanzi=$1
+    RewriteRule ^api/words/by-hanzi/(.+)$ api/words.php?hanzi=$1 [L,QSA]
+
+    # Route /api/words/([0-9]+) to api/words.php?id=$1
+    RewriteRule ^api/words/([0-9]+)$ api/words.php?id=$1 [L,QSA]
+
+    # Route /api/words to api/words.php
+    RewriteRule ^api/words/?$ api/words.php [L,QSA]
+</IfModule>

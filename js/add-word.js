@@ -5,16 +5,22 @@ let searchQuery = '';
 
 const dbBadge = document.getElementById('dbBadge');
 
+function getApiEndpoint(path) {
+  const inViewFolder = window.location.pathname.replace(/\\/g, '/').includes('/view/');
+  const prefix = inViewFolder ? '../api/' : 'api/';
+  return prefix + path;
+}
+
 // Check DB Connection Status
 async function checkDbStatus() {
   try {
-    const res = await fetch('/api/health');
+    const res = await fetch(getApiEndpoint('health.php'));
     if (res.ok) {
       const data = await res.json();
       isDbOnline = true;
       if (dbBadge) {
         dbBadge.className = 'db-badge online';
-        dbBadge.innerHTML = `🟢 SQLite DB Online (${data.totalWords} คำ ในระบบ)`;
+        dbBadge.innerHTML = `🟢 MySQL DB Online (${data.totalWords} คำ ในระบบ)`;
       }
     } else {
       throw new Error('DB health check failed');
@@ -28,13 +34,13 @@ async function checkDbStatus() {
   }
 }
 
-// Load words from SQLite DB or LocalStorage fallback
+// Load words from MySQL DB or LocalStorage fallback
 async function loadWords() {
   await checkDbStatus();
 
   if (isDbOnline) {
     try {
-      const res = await fetch('/api/words');
+      const res = await fetch(getApiEndpoint('words.php'));
       if (res.ok) {
         customWords = await res.json();
         renderWords();
@@ -143,14 +149,14 @@ document.getElementById('wordForm')?.addEventListener('submit', async (event) =>
 
   if (isDbOnline) {
     try {
-      const response = await fetch('/api/words', {
+      const response = await fetch(getApiEndpoint('words.php'), {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(wordObj)
       });
 
       if (response.ok) {
-        setStatus(`✅ บันทึก "${hanziVal}" ลง SQLite DB สำเร็จ!`);
+        setStatus(`✅ บันทึก "${hanziVal}" ลง MySQL DB สำเร็จ!`);
         form.reset();
         form.hanzi.focus();
         await loadWords(); // refresh list & db badge count
@@ -186,10 +192,10 @@ document.getElementById('savedWords')?.addEventListener('click', async (event) =
 
   if (isDbOnline) {
     try {
-      let deleteUrl = wordId ? `/api/words/${wordId}` : `/api/words/by-hanzi/${encodeURIComponent(hanzi)}`;
+      let deleteUrl = wordId ? getApiEndpoint(`words.php?id=${wordId}`) : getApiEndpoint(`words.php?hanzi=${encodeURIComponent(hanzi)}`);
       const res = await fetch(deleteUrl, { method: 'DELETE' });
       if (res.ok) {
-        setStatus(`ลบคำว่า "${hanzi}" ออกจาก SQLite DB แล้ว`);
+        setStatus(`ลบคำว่า "${hanzi}" ออกจาก MySQL DB แล้ว`);
         await loadWords();
         return;
       }
