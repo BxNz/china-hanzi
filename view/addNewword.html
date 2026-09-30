@@ -60,15 +60,14 @@
 							<input id="pinyin" name="pinyin" type="text" placeholder="xuéxí" autocomplete="off">
 						</label>
 						<label class="field" for="level">
-							<span class="field-label">ระดับ</span>
-							<select id="level" name="level">
-								<option value="">คำของฉัน (Custom)</option>
-								<option value="1">HSK 1</option>
-								<option value="2">HSK 2</option>
-								<option value="3">HSK 3</option>
-							</select>
+							<span class="field-label">ระดับ HSK (เว้นว่างสำหรับคำ Custom)</span>
+							<input id="level" name="level" type="number" min="1" step="1" placeholder="กรอกระดับ เช่น 4">
 						</label>
 					</div>
+					<label class="field" for="category">
+						<span class="field-label">หมวดแฟลชการ์ด</span>
+						<select id="category" name="category"></select>
+					</label>
 					<label class="field" for="meaning">
 						<span class="field-label">ความหมาย</span>
 						<input id="meaning" name="meaning" type="text" placeholder="เรียน, ศึกษา" autocomplete="off">
@@ -95,7 +94,7 @@
 		</div>
 	</main>
 	<script src="../js/navbar.js?v=1.0.1"></script>
-	<script src="../js/add-word.js?v=1.0.1"></script>
+	<script src="../js/add-word.js?v=1.0.2"></script>
 	<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>

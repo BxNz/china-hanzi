@@ -2,6 +2,7 @@ let customWords = [];
 let isDbOnline = false;
 let isAuthenticated = false;
 let searchQuery = '';
+const CATEGORY_STORAGE_KEY = 'hanzi-custom-categories';
 
 const dbBadge = document.getElementById('dbBadge');
 
@@ -152,6 +153,23 @@ function setStatus(message, isError = false) {
   }
 }
 
+function populateCategoryOptions() {
+  const select = document.getElementById('category');
+  if (!select) return;
+
+  let categories = [];
+  try {
+    const saved = JSON.parse(localStorage.getItem(CATEGORY_STORAGE_KEY) || '[]');
+    if (Array.isArray(saved)) categories = saved;
+  } catch (error) {}
+
+  select.replaceChildren(new Option('คำของฉัน', 'custom'));
+  categories.forEach((category) => {
+    if (!category || !/^[a-z0-9_-]+$/.test(category.id) || !category.label) return;
+    select.add(new Option(category.label, category.id));
+  });
+}
+
 document.getElementById('loginForm')?.addEventListener('submit', async (event) => {
   event.preventDefault();
   const form = event.currentTarget;
@@ -207,7 +225,8 @@ document.getElementById('wordForm')?.addEventListener('submit', async (event) =>
     hanzi: hanziVal,
     pinyin: pinyinVal,
     meaning: meaningVal,
-    level: levelVal
+    level: levelVal,
+    category: form.category.value
   };
 
   try {
@@ -265,4 +284,5 @@ document.getElementById('searchWordInput')?.addEventListener('input', (e) => {
   renderWords();
 });
 
+populateCategoryOptions();
 initializeAuth();

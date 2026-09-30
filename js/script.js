@@ -28,6 +28,23 @@ function getCustomPool(){
   return VOCAB.filter(w => selectedWords.has(w.h)).concat(customWords);
 }
 
+function renderLevelButtons(){
+  const container = document.getElementById('levelBtns');
+  const levels = [...new Set(VOCAB
+    .map(word => Number(word.l))
+    .filter(level => Number.isInteger(level) && level > 0))]
+    .sort((first, second) => first - second);
+
+  container.replaceChildren();
+  [['all', 'ทั้งหมด'], ...levels.map(level => [String(level), `HSK ${level}`])].forEach(([value, label], index) => {
+    const button = document.createElement('button');
+    button.className = `lvl-btn${index === 0 ? ' active' : ''}`;
+    button.dataset.lvl = value;
+    button.textContent = label;
+    container.appendChild(button);
+  });
+}
+
 function pickWord(){
   const pool = currentSource === "custom"
     ? getCustomPool()
@@ -260,6 +277,7 @@ function attachUI(){
 
 function startApp(){
   if (!VOCAB || VOCAB.length === 0) return;
+  renderLevelButtons();
   currentLevel = 'all';
   currentWord = VOCAB[0];
   loadCustomWords();

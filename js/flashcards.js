@@ -45,7 +45,8 @@ async function loadVocabFromDb() {
   }
 }
 
-const CATS = [
+const CATEGORY_STORAGE_KEY = "hanzi-custom-categories";
+const BASE_CATS = [
   { id: "all", label: "ทั้งหมด" },
   { id: "shop", label: "ร้านค้า" },
   { id: "pos", label: "POS" },
@@ -54,6 +55,23 @@ const CATS = [
   { id: "sent", label: "ประโยค" },
   { id: "custom", label: "คำของฉัน" },
 ];
+let CATS = [...BASE_CATS, ...loadCustomCategories()];
+
+function loadCustomCategories() {
+  try {
+    const categories = JSON.parse(localStorage.getItem(CATEGORY_STORAGE_KEY) || "[]");
+    if (!Array.isArray(categories)) return [];
+    const reservedIds = new Set(BASE_CATS.map((category) => category.id));
+    return categories.filter((category) =>
+      category &&
+      /^[a-z0-9_-]+$/.test(category.id) &&
+      category.label &&
+      !reservedIds.has(category.id),
+    );
+  } catch (error) {
+    return [];
+  }
+}
 
 let known = {};
 let activeCat = "all";
@@ -113,6 +131,67 @@ function buildChips() {
     els.chips.appendChild(b);
   });
 }
+
+async function hasAuthenticatedSession() {
+  try {
+    const response = await fetch(getApiEndpoint("session.php"), { cache: "no-store" });
+    return response.ok;
+  } catch (error) {
+    return false;
+  }
+}
+
+function setCategoryFormAccess(isAuthenticated) {
+  const form = document.getElementById("categoryForm");
+  form.querySelectorAll("label, button").forEach((control) => {
+    control.hidden = !isAuthenticated;
+  });
+  form.querySelectorAll("input, button").forEach((control) => {
+    control.disabled = !isAuthenticated;
+  });
+  document.getElementById("categoryStatus").textContent = isAuthenticated
+    ? ""
+    : "กรุณาเข้าสู่ระบบก่อนเพิ่มหมวด";
+  document.getElementById("categoryLoginLink").hidden = isAuthenticated;
+}
+
+document.getElementById("categoryForm").addEventListener("submit", async (event) => {
+  event.preventDefault();
+  const isAuthenticated = await hasAuthenticatedSession();
+  setCategoryFormAccess(isAuthenticated);
+  if (!isAuthenticated) return;
+
+  const form = event.currentTarget;
+  const id = form.elements.categoryId.value.trim().toLowerCase();
+  const label = form.elements.categoryLabel.value.trim();
+  const status = document.getElementById("categoryStatus");
+
+  if (!/^[a-z0-9_-]+$/.test(id)) {
+    status.textContent = "รหัสหมวดใช้ได้เฉพาะ a-z, 0-9, _ และ -";
+    return;
+  }
+  if (!label) {
+    status.textContent = "กรุณากรอกชื่อเมนู";
+    return;
+  }
+  if (CATS.some((category) => category.id === id)) {
+    status.textContent = "มีรหัสหมวดนี้แล้ว";
+    return;
+  }
+
+  const category = { id, label };
+  const customCategories = loadCustomCategories();
+  customCategories.push(category);
+  localStorage.setItem(CATEGORY_STORAGE_KEY, JSON.stringify(customCategories));
+  CATS = [...BASE_CATS, ...customCategories];
+  form.reset();
+  status.textContent = `เพิ่มเมนู ${label} แล้ว`;
+  activeCat = id;
+  idx = 0;
+  buildChips();
+  resetOrder();
+  render();
+});
 
 function resetOrder() {
   order = currentList().map((v, i) => i);
@@ -233,6 +312,7 @@ document.getElementById("btn-reset").onclick = () => {
 async function init() {
   await loadProgress();
   await loadVocabFromDb();
+  setCategoryFormAccess(await hasAuthenticatedSession());
   buildChips();
   resetOrder();
   render();
