@@ -12,11 +12,25 @@ function getApiEndpoint(path) {
   return prefix + path;
 }
 
+async function safeJsonResponse(response, fallback = null) {
+  if (!response) return fallback;
+
+  const text = await response.text();
+  if (!text || !text.trim()) return fallback;
+
+  try {
+    return JSON.parse(text);
+  } catch (error) {
+    console.warn('Non-JSON API response received:', text.slice(0, 200));
+    return fallback;
+  }
+}
+
 async function checkDbStatus() {
   try {
     const res = await fetch(getApiEndpoint('health.php'));
     if (res.ok) {
-      const data = await res.json();
+      const data = await safeJsonResponse(res, { status: 'offline' });
       if (data.status === 'online') {
         isDbOnline = true;
         if (dbBadge) {
@@ -28,10 +42,8 @@ async function checkDbStatus() {
       }
     } else {
       let errMsg = 'ไม่สามารถเชื่อมต่อ DB ได้';
-      try {
-        const errData = await res.json();
-        if (errData.error) errMsg = errData.error;
-      } catch (e) {}
+      const errData = await safeJsonResponse(res, {});
+      if (errData && errData.error) errMsg = errData.error;
       throw new Error(errMsg);
     }
   } catch (err) {
@@ -57,7 +69,8 @@ async function loadWords() {
   try {
     const response = await fetch(getApiEndpoint('words.php'));
     if (!response.ok) throw new Error('ไม่สามารถโหลดคำศัพท์ได้');
-    customWords = await response.json();
+    customWords = await safeJsonResponse(response, []);
+    if (!Array.isArray(customWords)) customWords = [];
   } catch (error) {
     customWords = [];
   }
@@ -74,6 +87,7 @@ function setAuthenticated(user) {
   document.getElementById('loginPanel').hidden = isAuthenticated;
   document.getElementById('managementPanel').hidden = !isAuthenticated;
   document.getElementById('accountName').textContent = user ? (user.name || user.username) : '';
+  populateCategoryOptions();
   setEditingEnabled(isAuthenticated && isDbOnline);
 }
 
@@ -81,10 +95,12 @@ async function initializeAuth() {
   try {
     const response = await fetch(getApiEndpoint('session.php'), { cache: 'no-store' });
     if (response.ok) {
-      const data = await response.json();
-      setAuthenticated(data.user);
-      await loadWords();
-      return;
+      const data = await safeJsonResponse(response, {});
+      if (data && data.user) {
+        setAuthenticated(data.user);
+        await loadWords();
+        return;
+      }
     }
   } catch (error) {
     document.getElementById('loginStatus').textContent = 'ไม่สามารถเชื่อมต่อระบบได้';
@@ -182,8 +198,8 @@ document.getElementById('loginForm')?.addEventListener('submit', async (event) =
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ username: form.username.value.trim(), password: form.password.value })
     });
-    const data = await response.json();
-    if (!response.ok) throw new Error(data.error || 'เข้าสู่ระบบไม่สำเร็จ');
+    const data = await safeJsonResponse(response, {});
+    if (!response.ok) throw new Error((data && data.error) || 'เข้าสู่ระบบไม่สำเร็จ');
     form.reset();
     setAuthenticated(data.user);
     await loadWords();
@@ -236,13 +252,13 @@ document.getElementById('wordForm')?.addEventListener('submit', async (event) =>
       body: JSON.stringify(wordObj)
     });
 
-    const data = await response.json();
+    const data = await safeJsonResponse(response, {});
     if (response.status === 401) {
       setAuthenticated(null);
-      document.getElementById('loginStatus').textContent = data.error || 'เซสชันหมดอายุ กรุณาเข้าสู่ระบบอีกครั้ง';
+      document.getElementById('loginStatus').textContent = (data && data.error) || 'เซสชันหมดอายุ กรุณาเข้าสู่ระบบอีกครั้ง';
       return;
     }
-    if (!response.ok) throw new Error(data.error || 'บันทึกคำไม่สำเร็จ');
+    if (!response.ok) throw new Error((data && data.error) || 'บันทึกคำไม่สำเร็จ');
     setStatus(`บันทึก "${hanziVal}" ลง ${data.db || 'DB'} สำเร็จ`);
     form.reset();
     form.hanzi.focus();
@@ -264,13 +280,13 @@ document.getElementById('savedWords')?.addEventListener('click', async (event) =
   try {
     const deleteUrl = wordId ? getApiEndpoint(`words.php?id=${wordId}`) : getApiEndpoint(`words.php?hanzi=${encodeURIComponent(hanzi)}`);
     const response = await fetch(deleteUrl, { method: 'DELETE' });
-    const data = await response.json();
+    const data = await safeJsonResponse(response, {});
     if (response.status === 401) {
       setAuthenticated(null);
-      document.getElementById('loginStatus').textContent = data.error || 'เซสชันหมดอายุ กรุณาเข้าสู่ระบบอีกครั้ง';
+      document.getElementById('loginStatus').textContent = (data && data.error) || 'เซสชันหมดอายุ กรุณาเข้าสู่ระบบอีกครั้ง';
       return;
     }
-    if (!response.ok) throw new Error(data.error || 'ลบคำไม่สำเร็จ');
+    if (!response.ok) throw new Error((data && data.error) || 'ลบคำไม่สำเร็จ');
     setStatus(`ลบคำว่า "${hanzi}" ออกจากฐานข้อมูลแล้ว`);
     await loadWords();
   } catch (error) {

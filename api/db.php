@@ -1,6 +1,30 @@
 <?php
 require_once __DIR__ . '/config.php';
 
+function ensureSqliteFileIsWritable() {
+    $sqlitePath = SQLITE_FILE;
+    $directory = dirname($sqlitePath);
+
+    if (!is_dir($directory)) {
+        if (!@mkdir($directory, 0777, true) && !is_dir($directory)) {
+            throw new Exception("ไม่สามารถสร้างโฟลเดอร์ฐานข้อมูลได้: {$directory}");
+        }
+    }
+
+    if (!is_writable($directory)) {
+        throw new Exception("โฟลเดอร์ฐานข้อมูลไม่มีสิทธิ์เขียน: {$directory}");
+    }
+
+    if (!file_exists($sqlitePath)) {
+        $created = @touch($sqlitePath);
+        if (!$created) {
+            throw new Exception("ไม่สามารถสร้างไฟล์ SQLite ได้: {$sqlitePath}");
+        }
+    }
+
+    return $sqlitePath;
+}
+
 function getDbConnection() {
     static $pdo = null;
     static $driverUsed = null;
@@ -38,20 +62,20 @@ function getDbConnection() {
             // Fallback to SQLite if MySQL fails in 'auto' mode
             if ($pdo === null && $driverMode === 'auto' && extension_loaded('pdo_sqlite')) {
                 try {
-                    $sqlitePath = SQLITE_FILE;
+                    $sqlitePath = ensureSqliteFileIsWritable();
                     $pdo = new PDO("sqlite:" . $sqlitePath);
                     $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
                     $pdo->setAttribute(PDO::ATTR_DEFAULT_FETCH_MODE, PDO::FETCH_ASSOC);
                     $driverUsed = 'SQLite';
                 } catch (Exception $sqEx) {
-                    throw new Exception("ไม่สามารถเชื่อมต่อฐานข้อมูลได้: " . $e->getMessage());
+                    throw new Exception("ไม่สามารถเชื่อมต่อฐานข้อมูลได้: " . $sqEx->getMessage());
                 }
             } elseif ($pdo === null) {
                 throw new Exception("ไม่สามารถเชื่อมต่อ MySQL ได้: " . $e->getMessage() . " (กรุณากด Start ที่โมดูล MySQL ใน XAMPP Control Panel)");
             }
         }
     } elseif ($driverMode === 'sqlite') {
-        $sqlitePath = SQLITE_FILE;
+        $sqlitePath = ensureSqliteFileIsWritable();
         $pdo = new PDO("sqlite:" . $sqlitePath);
         $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
         $pdo->setAttribute(PDO::ATTR_DEFAULT_FETCH_MODE, PDO::FETCH_ASSOC);

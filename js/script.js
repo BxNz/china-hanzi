@@ -294,9 +294,15 @@ function getApiEndpoint(path) {
 
 // Load vocabulary from MySQL DB server or fallback to json/vocab.json
 fetch(getApiEndpoint('words.php'))
-  .then(r => {
+  .then(async r => {
     if (!r.ok) throw new Error('DB API not available');
-    return r.json();
+    const text = await r.text();
+    if (!text || !text.trim()) throw new Error('Empty DB response');
+    try {
+      return JSON.parse(text);
+    } catch (e) {
+      throw new Error('Invalid DB response');
+    }
   })
   .then(data => {
     if (Array.isArray(data) && data.length > 0) {

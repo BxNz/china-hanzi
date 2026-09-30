@@ -16,7 +16,8 @@ define('DB_PORT', getenv('DB_PORT') ?: '3306');
 define('DB_CHARSET', 'utf8mb4');
 
 // SQLite File Path (Fallback for Local Development)
-define('SQLITE_FILE', __DIR__ . '/vocab.sqlite');
+// Use a temp directory instead of the project folder because some Windows/OneDrive setups block SQLite file creation in workspace paths.
+define('SQLITE_FILE', rtrim(sys_get_temp_dir(), DIRECTORY_SEPARATOR) . DIRECTORY_SEPARATOR . 'china_hanzi_vocab.sqlite');
 
 /*
  * ==============================================================================
