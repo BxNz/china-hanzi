@@ -62,8 +62,9 @@ function getDbConnection() {
         throw new Exception("ไม่สามารถสร้างการเชื่อมต่อฐานข้อมูลได้");
     }
 
-    // Initialize table & seed vocabulary
+    // Initialize tables & seed data
     initDatabaseTable($pdo, $driverUsed);
+    initUsersTable($pdo, $driverUsed);
 
     return ['pdo' => $pdo, 'driver' => $driverUsed];
 }
@@ -101,6 +102,40 @@ function initDatabaseTable($pdo, $driverType) {
     $row = $stmt->fetch();
     if ($row && (int)$row['cnt'] === 0) {
         seedInitialVocab($pdo, $driverType);
+    }
+}
+
+function initUsersTable($pdo, $driverType) {
+    if ($driverType === 'SQLite') {
+        $tableSql = "
+            CREATE TABLE IF NOT EXISTS users (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                username TEXT UNIQUE NOT NULL,
+                password TEXT NOT NULL,
+                name TEXT DEFAULT 'Admin',
+                created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+            );
+        ";
+    } else {
+        $tableSql = "
+            CREATE TABLE IF NOT EXISTS `users` (
+                `id` INT AUTO_INCREMENT PRIMARY KEY,
+                `username` VARCHAR(50) NOT NULL UNIQUE,
+                `password` VARCHAR(255) NOT NULL,
+                `name` VARCHAR(100) DEFAULT 'Admin',
+                `created_at` DATETIME DEFAULT CURRENT_TIMESTAMP
+            ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+        ";
+    }
+    $pdo->exec($tableSql);
+
+    // Seed default admin account if empty
+    $stmt = $pdo->query("SELECT COUNT(*) AS cnt FROM users WHERE username = 'admin'");
+    $row = $stmt->fetch();
+    if ($row && (int)$row['cnt'] === 0) {
+        $defaultHash = '$2y$10$aOjdSwKFlUVZFdZgkKMN.uMf4jOyC4CwGdMcF6wK.D.44J6Na6mI2';
+        $insert = $pdo->prepare("INSERT INTO users (username, password, name) VALUES ('admin', ?, 'ผู้ดูแลระบบ')");
+        $insert->execute([$defaultHash]);
     }
 }
 
