@@ -29,6 +29,14 @@ body{
 .page-nav-link{padding:7px 14px;border:1px solid var(--grid-line);border-radius:4px;background:var(--paper-card);color:var(--ink-soft);font-size:13px;text-decoration:none;}
 .page-nav-link.active{border-color:var(--ink);background:var(--ink);color:var(--paper-card);}
 
+[hidden]{display:none!important;}
+.login-card{max-width:420px;margin:0 auto;padding:22px 20px;background:rgba(247,243,233,.9);border:1px solid var(--grid-line);border-radius:4px;}
+.login-card .card-hint{margin-bottom:18px;}
+.login-submit{width:100%;}
+.account-bar{display:flex;align-items:center;justify-content:space-between;gap:12px;margin:0 0 12px;padding:10px 12px;border-bottom:1px solid var(--grid-line);font-size:13px;}
+.text-btn{padding:5px 8px;border:1px solid var(--grid-line);border-radius:3px;background:transparent;color:var(--ink-soft);font:12px 'Noto Sans Thai',sans-serif;cursor:pointer;}
+.text-btn:hover{border-color:var(--seal);color:var(--seal);}
+
 /* DB Badge & Status */
 .status-container{display:flex;justify-content:center;margin-bottom:14px;}
 .db-badge{display:inline-flex;align-items:center;padding:6px 14px;border-radius:20px;font-size:12px;font-weight:500;border:1px solid var(--grid-line);background:#fff;}

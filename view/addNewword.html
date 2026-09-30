@@ -19,9 +19,31 @@
 		<div class="rule"></div>
 		<div data-navbar></div>
 
-		<div class="status-container">
-			<div id="dbBadge" class="db-badge">กำลังเชื่อมต่อ MySQL Database...</div>
+		<section class="login-card" id="loginPanel" aria-labelledby="loginTitle">
+			<h1 class="card-title" id="loginTitle">เข้าสู่ระบบเพื่อจัดการคำศัพท์</h1>
+			<p class="card-hint">กรุณาเข้าสู่ระบบด้วยบัญชีผู้ดูแลระบบ</p>
+			<form id="loginForm">
+				<label class="field" for="username">
+					<span class="field-label">ชื่อผู้ใช้</span>
+					<input id="username" name="username" type="text" required autocomplete="username">
+				</label>
+				<label class="field" for="password">
+					<span class="field-label">รหัสผ่าน</span>
+					<input id="password" name="password" type="password" required autocomplete="current-password">
+				</label>
+				<button class="btn seal login-submit" type="submit">เข้าสู่ระบบ</button>
+				<p class="status" id="loginStatus" role="status" aria-live="polite"></p>
+			</form>
 		</div>
+
+		<div id="managementPanel" hidden>
+			<div class="account-bar">
+				<span>เข้าสู่ระบบเป็น <strong id="accountName"></strong></span>
+				<button class="text-btn" id="logoutButton" type="button">ออกจากระบบ</button>
+			</div>
+			<div class="status-container">
+				<div id="dbBadge" class="db-badge">กำลังเชื่อมต่อ MySQL Database...</div>
+			</div>
 
 		<section class="form-card" aria-labelledby="formTitle">
 			<div class="form-content">
@@ -70,6 +92,7 @@
 			</div>
 			<div class="saved-list" id="savedWords"></div>
 		</section>
+		</div>
 	</main>
 	<script src="../js/navbar.js?v=1.0.1"></script>
 	<script src="../js/add-word.js?v=1.0.1"></script>
