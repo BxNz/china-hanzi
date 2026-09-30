@@ -1,4 +1,8 @@
 <?php
+if (session_status() === PHP_SESSION_NONE) {
+    session_start();
+}
+
 header('Content-Type: application/json; charset=utf-8');
 header('Access-Control-Allow-Origin: *');
 header('Access-Control-Allow-Methods: GET, POST, DELETE, OPTIONS');
@@ -8,6 +12,12 @@ $method = $_SERVER['REQUEST_METHOD'] ?? 'GET';
 
 if ($method === 'OPTIONS') {
     http_response_code(200);
+    exit;
+}
+
+if (($method === 'POST' || $method === 'DELETE') && empty($_SESSION['user_id'])) {
+    http_response_code(401);
+    echo json_encode(['error' => 'กรุณาเข้าสู่ระบบก่อนจัดการคำศัพท์'], JSON_UNESCAPED_UNICODE);
     exit;
 }
 

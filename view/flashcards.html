@@ -26,6 +26,18 @@
 
     <div class="chips" id="chips"></div>
 
+    <form class="category-manager" id="categoryForm">
+      <label for="categoryId" hidden>รหัสหมวด
+        <input id="categoryId" name="categoryId" type="text" required pattern="[A-Za-z0-9_]+(-[A-Za-z0-9_]+)*" maxlength="40" placeholder="เช่น cafe" disabled>
+      </label>
+      <label for="categoryLabel" hidden>ชื่อเมนู
+        <input id="categoryLabel" name="categoryLabel" type="text" required maxlength="40" placeholder="เช่น ร้านกาแฟ" disabled>
+      </label>
+      <button type="submit" hidden disabled>เพิ่มหมวด</button>
+      <p id="categoryStatus" role="status" aria-live="polite">กรุณาเข้าสู่ระบบก่อนเพิ่มหมวด</p>
+      <a class="category-login" id="categoryLoginLink" href="addNewword.html">เข้าสู่ระบบ</a>
+    </form>
+
     <div id="stage-holder">
       <div class="stage">
         <div class="tag" id="tag">
@@ -71,7 +83,7 @@
 
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
   <script src="../js/navbar.js?v=1.0.1"></script>
-  <script src="../js/flashcards.js?v=1.0.1"></script>
+  <script src="../js/flashcards.js?v=1.0.4"></script>
 </body>
 
 </html>

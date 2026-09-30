@@ -1,7 +1,8 @@
-const STORAGE_KEY = 'hanzi-custom-words';
 let customWords = [];
 let isDbOnline = false;
+let isAuthenticated = false;
 let searchQuery = '';
+const CATEGORY_STORAGE_KEY = 'hanzi-custom-categories';
 
 const dbBadge = document.getElementById('dbBadge');
 
@@ -11,7 +12,6 @@ function getApiEndpoint(path) {
   return prefix + path;
 }
 
-// Check DB Connection Status
 async function checkDbStatus() {
   try {
     const res = await fetch(getApiEndpoint('health.php'));
@@ -21,7 +21,7 @@ async function checkDbStatus() {
         isDbOnline = true;
         if (dbBadge) {
           dbBadge.className = 'db-badge online';
-          dbBadge.innerHTML = `🟢 DB Online (${data.db} Mode - ${data.totalWords} คำ ในระบบ)`;
+          dbBadge.textContent = `DB Online (${data.db} Mode - ${data.totalWords} คำ ในระบบ)`;
         }
       } else {
         throw new Error(data.error || 'DB health check failed');
@@ -38,40 +38,58 @@ async function checkDbStatus() {
     isDbOnline = false;
     if (dbBadge) {
       dbBadge.className = 'db-badge offline';
-      dbBadge.innerHTML = `🟡 โหมด Offline (ใช้ LocalStorage ในเครื่อง): ${err.message}`;
+      dbBadge.textContent = `ฐานข้อมูลไม่พร้อมใช้งาน: ${err.message}`;
     }
   }
+
+  setEditingEnabled(isAuthenticated && isDbOnline);
 }
 
-// Load words from MySQL DB or LocalStorage fallback
 async function loadWords() {
   await checkDbStatus();
 
-  if (isDbOnline) {
-    try {
-      const res = await fetch(getApiEndpoint('words.php'));
-      if (res.ok) {
-        customWords = await res.json();
-        renderWords();
-        return;
-      }
-    } catch (err) {
-      console.warn('⚠️ Fetching from DB failed, falling back to LocalStorage:', err);
-    }
+  if (!isDbOnline) {
+    customWords = [];
+    renderWords();
+    return;
   }
 
-  // Fallback to localStorage
   try {
-    const saved = JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]');
-    customWords = Array.isArray(saved) ? saved : [];
+    const response = await fetch(getApiEndpoint('words.php'));
+    if (!response.ok) throw new Error('ไม่สามารถโหลดคำศัพท์ได้');
+    customWords = await response.json();
   } catch (error) {
     customWords = [];
   }
   renderWords();
 }
 
-function saveLocalBackup() {
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(customWords));
+function setEditingEnabled(enabled) {
+  document.querySelectorAll('#wordForm input, #wordForm select, #wordForm button, .delete-btn')
+    .forEach(control => { control.disabled = !enabled; });
+}
+
+function setAuthenticated(user) {
+  isAuthenticated = Boolean(user);
+  document.getElementById('loginPanel').hidden = isAuthenticated;
+  document.getElementById('managementPanel').hidden = !isAuthenticated;
+  document.getElementById('accountName').textContent = user ? (user.name || user.username) : '';
+  setEditingEnabled(isAuthenticated && isDbOnline);
+}
+
+async function initializeAuth() {
+  try {
+    const response = await fetch(getApiEndpoint('session.php'), { cache: 'no-store' });
+    if (response.ok) {
+      const data = await response.json();
+      setAuthenticated(data.user);
+      await loadWords();
+      return;
+    }
+  } catch (error) {
+    document.getElementById('loginStatus').textContent = 'ไม่สามารถเชื่อมต่อระบบได้';
+  }
+  setAuthenticated(null);
 }
 
 function renderWords() {
@@ -118,7 +136,7 @@ function renderWords() {
         <div class="saved-pinyin"></div>
         <div class="saved-meaning"></div>
       </div>
-      <button class="delete-btn" type="button" data-id="${wordId}" data-hanzi="${encodeURIComponent(word.h)}">ลบ</button>`;
+      <button class="delete-btn" type="button" data-id="${wordId}" data-hanzi="${encodeURIComponent(word.h)}" ${isDbOnline ? '' : 'disabled'}>ลบ</button>`;
 
     item.querySelector('.saved-hanzi').textContent = word.h;
     item.querySelector('.saved-pinyin').textContent = word.p || 'ยังไม่ได้เพิ่ม pinyin';
@@ -135,9 +153,63 @@ function setStatus(message, isError = false) {
   }
 }
 
+function populateCategoryOptions() {
+  const select = document.getElementById('category');
+  if (!select) return;
+
+  let categories = [];
+  try {
+    const saved = JSON.parse(localStorage.getItem(CATEGORY_STORAGE_KEY) || '[]');
+    if (Array.isArray(saved)) categories = saved;
+  } catch (error) {}
+
+  select.replaceChildren(new Option('คำของฉัน', 'custom'));
+  categories.forEach((category) => {
+    if (!category || !/^[a-z0-9_-]+$/.test(category.id) || !category.label) return;
+    select.add(new Option(category.label, category.id));
+  });
+}
+
+document.getElementById('loginForm')?.addEventListener('submit', async (event) => {
+  event.preventDefault();
+  const form = event.currentTarget;
+  const status = document.getElementById('loginStatus');
+  status.textContent = '';
+
+  try {
+    const response = await fetch(getApiEndpoint('login.php'), {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ username: form.username.value.trim(), password: form.password.value })
+    });
+    const data = await response.json();
+    if (!response.ok) throw new Error(data.error || 'เข้าสู่ระบบไม่สำเร็จ');
+    form.reset();
+    setAuthenticated(data.user);
+    await loadWords();
+  } catch (error) {
+    status.textContent = error.message;
+  }
+});
+
+document.getElementById('logoutButton')?.addEventListener('click', async () => {
+  try {
+    const response = await fetch(getApiEndpoint('logout.php'), { method: 'POST' });
+    if (!response.ok) throw new Error('ไม่สามารถออกจากระบบได้');
+    document.getElementById('loginStatus').textContent = '';
+  } catch (error) {
+    document.getElementById('loginStatus').textContent = error.message;
+  } finally {
+    customWords = [];
+    renderWords();
+    setAuthenticated(null);
+  }
+});
+
 // Handle Form Submit (Add/Update word)
 document.getElementById('wordForm')?.addEventListener('submit', async (event) => {
   event.preventDefault();
+  if (!isAuthenticated || !isDbOnline) return;
   const form = event.currentTarget;
   const hanziVal = form.hanzi.value.trim();
   const pinyinVal = form.pinyin.value.trim();
@@ -153,73 +225,57 @@ document.getElementById('wordForm')?.addEventListener('submit', async (event) =>
     hanzi: hanziVal,
     pinyin: pinyinVal,
     meaning: meaningVal,
-    level: levelVal
+    level: levelVal,
+    category: form.category.value
   };
 
-  if (isDbOnline) {
-    try {
-      const response = await fetch(getApiEndpoint('words.php'), {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(wordObj)
-      });
+  try {
+    const response = await fetch(getApiEndpoint('words.php'), {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(wordObj)
+    });
 
-      if (response.ok) {
-        const resData = await response.json();
-        const dbName = resData.db || 'DB';
-        setStatus(`✅ บันทึก "${hanziVal}" ลง ${dbName} สำเร็จ!`);
-        form.reset();
-        form.hanzi.focus();
-        await loadWords(); // refresh list & db badge count
-        return;
-      } else {
-        const errData = await response.json();
-        throw new Error(errData.error || 'Failed to save');
-      }
-    } catch (err) {
-      console.error('❌ Failed to save word to DB:', err);
-      setStatus(`⚠️ บันทึกลง DB ไม่สำเร็จ: ${err.message}`, true);
+    const data = await response.json();
+    if (response.status === 401) {
+      setAuthenticated(null);
+      document.getElementById('loginStatus').textContent = data.error || 'เซสชันหมดอายุ กรุณาเข้าสู่ระบบอีกครั้ง';
+      return;
     }
+    if (!response.ok) throw new Error(data.error || 'บันทึกคำไม่สำเร็จ');
+    setStatus(`บันทึก "${hanziVal}" ลง ${data.db || 'DB'} สำเร็จ`);
+    form.reset();
+    form.hanzi.focus();
+    await loadWords();
+  } catch (error) {
+    setStatus(error.message, true);
   }
-
-  // LocalStorage Fallback
-  const fallbackWord = { h: hanziVal, p: pinyinVal, t: meaningVal, l: levelVal };
-  customWords = customWords.filter(saved => saved.h !== hanziVal);
-  customWords.unshift(fallbackWord);
-  saveLocalBackup();
-  renderWords();
-  form.reset();
-  setStatus(`เพิ่ม "${hanziVal}" ไว้ใน LocalStorage เรียบร้อย`);
-  form.hanzi.focus();
 });
 
 // Handle Delete word
 document.getElementById('savedWords')?.addEventListener('click', async (event) => {
   const button = event.target.closest('.delete-btn');
   if (!button) return;
+  if (!isAuthenticated || !isDbOnline) return;
 
   const wordId = button.dataset.id;
   const hanzi = decodeURIComponent(button.dataset.hanzi);
 
-  if (isDbOnline) {
-    try {
-      let deleteUrl = wordId ? getApiEndpoint(`words.php?id=${wordId}`) : getApiEndpoint(`words.php?hanzi=${encodeURIComponent(hanzi)}`);
-      const res = await fetch(deleteUrl, { method: 'DELETE' });
-      if (res.ok) {
-        setStatus(`ลบคำว่า "${hanzi}" ออกจาก MySQL DB แล้ว`);
-        await loadWords();
-        return;
-      }
-    } catch (err) {
-      console.error('❌ Failed to delete word from DB:', err);
+  try {
+    const deleteUrl = wordId ? getApiEndpoint(`words.php?id=${wordId}`) : getApiEndpoint(`words.php?hanzi=${encodeURIComponent(hanzi)}`);
+    const response = await fetch(deleteUrl, { method: 'DELETE' });
+    const data = await response.json();
+    if (response.status === 401) {
+      setAuthenticated(null);
+      document.getElementById('loginStatus').textContent = data.error || 'เซสชันหมดอายุ กรุณาเข้าสู่ระบบอีกครั้ง';
+      return;
     }
+    if (!response.ok) throw new Error(data.error || 'ลบคำไม่สำเร็จ');
+    setStatus(`ลบคำว่า "${hanzi}" ออกจากฐานข้อมูลแล้ว`);
+    await loadWords();
+  } catch (error) {
+    setStatus(error.message, true);
   }
-
-  // LocalStorage fallback
-  customWords = customWords.filter(w => w.h !== hanzi);
-  saveLocalBackup();
-  renderWords();
-  setStatus(`ลบคำว่า "${hanzi}" ออกจากรายการแล้ว`);
 });
 
 // Handle Search input
@@ -228,5 +284,5 @@ document.getElementById('searchWordInput')?.addEventListener('input', (e) => {
   renderWords();
 });
 
-// Initial load
-loadWords();
+populateCategoryOptions();
+initializeAuth();
