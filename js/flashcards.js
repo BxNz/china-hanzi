@@ -6,11 +6,25 @@ function getApiEndpoint(path) {
   return prefix + path;
 }
 
+async function safeJsonResponse(response, fallback = null) {
+  if (!response) return fallback;
+
+  const text = await response.text();
+  if (!text || !text.trim()) return fallback;
+
+  try {
+    return JSON.parse(text);
+  } catch (error) {
+    console.warn('Non-JSON API response received:', text.slice(0, 200));
+    return fallback;
+  }
+}
+
 async function loadVocabFromDb() {
   try {
     const res = await fetch(getApiEndpoint('words.php'));
     if (res.ok) {
-      const dbWords = await res.json();
+      const dbWords = await safeJsonResponse(res, []);
       if (Array.isArray(dbWords) && dbWords.length > 0) {
         VOCAB = dbWords.map((word, index) => ({
           id: word.id ? `db-${word.id}` : `vocab-${index}`,
@@ -31,14 +45,14 @@ async function loadVocabFromDb() {
     const jsonPath = window.location.pathname.replace(/\\/g, '/').includes('/view/') ? '../json/vocab.json' : 'json/vocab.json';
     const res = await fetch(jsonPath);
     if (res.ok) {
-      const list = await res.json();
-      VOCAB = list.map((item, index) => ({
+      const list = await safeJsonResponse(res, []);
+      VOCAB = Array.isArray(list) ? list.map((item, index) => ({
         id: `json-${index}`,
         cat: item.cat || (item.l ? `hsk${item.l}` : 'custom'),
         hanzi: item.h || '',
         pinyin: item.p || '',
         thai: item.t || '',
-      }));
+      })) : [];
     }
   } catch (e) {
     console.error('Failed to load vocab.json', e);
