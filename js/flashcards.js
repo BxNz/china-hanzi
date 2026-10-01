@@ -149,7 +149,8 @@ function buildChips() {
 async function hasAuthenticatedSession() {
   try {
     const response = await fetch(getApiEndpoint("session.php"), { cache: "no-store" });
-    return response.ok;
+    const data = await safeJsonResponse(response, {});
+    return response.ok && data.authenticated === true;
   } catch (error) {
     return false;
   }
@@ -171,11 +172,11 @@ function setCategoryFormAccess(isAuthenticated) {
 
 document.getElementById("categoryForm").addEventListener("submit", async (event) => {
   event.preventDefault();
+  const form = event.currentTarget;
   const isAuthenticated = await hasAuthenticatedSession();
   setCategoryFormAccess(isAuthenticated);
   if (!isAuthenticated) return;
 
-  const form = event.currentTarget;
   const id = form.elements.categoryId.value.trim().toLowerCase();
   const label = form.elements.categoryLabel.value.trim();
   const status = document.getElementById("categoryStatus");
