@@ -40,6 +40,13 @@ china-hanzi/
      - สร้าง Database ชื่อ `china_hanzi`
      - ไปที่แท็บ **Import** เลือกไฟล์ `database.sql` ในโฟลเดอร์โปรเจกต์ แล้วกด **Go**
 
+### เข้าสู่ระบบเพื่อเพิ่มและจัดการคำศัพท์
+
+- เปิดหน้า `http://localhost/china-hanzi/view/addNewword.html`
+- บัญชีผู้ดูแลระบบเริ่มต้น: **Username:** `admin` / **Password:** `admin123`
+- หากยังไม่เข้าสู่ระบบ จะเพิ่มหรือลบคำศัพท์ไม่ได้ โดย API จะปฏิเสธคำขอเขียนด้วยสถานะ `401` ด้วย ไม่ได้อาศัยการซ่อนปุ่มบนหน้าเว็บอย่างเดียว
+- ก่อนนำขึ้นเว็บไซต์จริง ให้เปลี่ยนรหัสผ่านเริ่มต้นในตาราง `users` ผ่าน phpMyAdmin โดยสร้าง hash ด้วยคำสั่ง `php -r "echo password_hash('รหัสผ่านใหม่', PASSWORD_DEFAULT), PHP_EOL;"` แล้วนำ hash ไปอัปเดตแถว username `admin`
+
 ---
 
 ## 🚀 3. วิธีการอัปโหลดขึ้น InfinityFree Hosting

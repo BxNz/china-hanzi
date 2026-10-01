@@ -24,6 +24,19 @@ async function loadNavbar(){
       if (isActive) link.setAttribute('aria-current', 'page');
       else link.removeAttribute('aria-current');
     });
+
+    if (!inViewFolder) {
+      const levelButtons = document.getElementById('levelBtns');
+      const modeButtons = document.getElementById('modeBtns');
+      const navbarCollapse = container.querySelector('.navbar-collapse');
+
+      if (levelButtons && modeButtons && navbarCollapse) {
+        const practiceControls = document.createElement('div');
+        practiceControls.className = 'practice-nav-controls';
+        practiceControls.append(levelButtons, modeButtons);
+        navbarCollapse.appendChild(practiceControls);
+      }
+    }
   } catch (error) {
     console.error('Failed to load navbar.html', error);
   }

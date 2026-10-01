@@ -19,7 +19,6 @@ if ($method !== 'GET') {
 }
 
 if (empty($_SESSION['user_id'])) {
-    http_response_code(401);
     echo json_encode(['authenticated' => false], JSON_UNESCAPED_UNICODE);
     exit;
 }
