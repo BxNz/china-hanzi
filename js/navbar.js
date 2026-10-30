@@ -11,15 +11,23 @@ async function loadNavbar(){
     const pagePaths = {
       practice: inViewFolder ? '../index.html' : 'index.html',
       flashcards: inViewFolder ? 'flashcards.html' : 'view/flashcards.html',
+      search: inViewFolder ? 'search.html' : 'view/search.html',
       'add-word': inViewFolder ? 'addNewword.html' : 'view/addNewword.html',
       'hsk-pdf': inViewFolder ? '../hsk-words-visualized.pdf' : 'hsk-words-visualized.pdf'
     };
     const brand = container.querySelector('.navbar-brand');
     if (brand) brand.href = pagePaths.practice;
+    const currentPage = inViewFolder
+      ? {
+          'flashcards.html': 'flashcards',
+          'search.html': 'search',
+          'addNewword.html': 'add-word'
+        }[window.location.pathname.split('/').pop()] || 'practice'
+      : 'practice';
     container.querySelectorAll('.nav-link').forEach(link => {
       const page = link.dataset.page;
       link.href = pagePaths[page];
-      const isActive = page === (inViewFolder ? window.location.pathname.split('/').pop() === 'flashcards.html' ? 'flashcards' : window.location.pathname.split('/').pop() === 'addNewword.html' ? 'add-word' : 'practice' : 'practice');
+      const isActive = page === currentPage;
       link.classList.toggle('active', isActive);
       if (isActive) link.setAttribute('aria-current', 'page');
       else link.removeAttribute('aria-current');
